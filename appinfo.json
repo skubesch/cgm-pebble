@@ -6,7 +6,8 @@
         "name": 6,
         "tapp": 3,
         "tcgm": 2,
-        "ubat": 5
+        "ubat": 5,
+        "vals": 7
     },
     "capabilities": [
         "configurable"
@@ -54,6 +55,16 @@
             {
                 "file": "images/none.png",
                 "name": "IMAGE_NONE",
+                "type": "png"
+            },
+            {
+                "file": "images/club100.png",
+                "name": "IMAGE_CLUB100",
+                "type": "png"
+            },
+            {
+                "file": "images/club55.png",
+                "name": "IMAGE_CLUB55",
                 "type": "png"
             },
             {
@@ -182,7 +193,7 @@
     "shortName": "Nightscout IOB",
     "uuid": "503f521e-db8e-4957-9499-6f1d45a92d1b",
     "versionCode": 12,
-    "versionLabel": "5.2",
+    "versionLabel": "6.1",
     "watchapp": {
         "watchface": true
     }

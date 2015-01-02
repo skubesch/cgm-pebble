@@ -1,8 +1,8 @@
 // main function to retrieve, format, and send cgm data
 function fetchCgmData() {
-  
+
     //console.log ("START fetchCgmData");
-                
+
     // declare local variables for message data
     var response, message;
 
@@ -21,45 +21,47 @@ function fetchCgmData() {
           tapp: 0,
           dlta: "NOEP",
           ubat: " ",
-          name: " "
+          name: " ",
+          vals: " "
         };
-        
+
         console.log("NO ENDPOINT JS message", JSON.stringify(message));
         MessageQueue.sendAppMessage(message);
         return;
     } // if (!opts.endpoint)
-	
+
     // show current options
     //console.log("fetchCgmData IN OPTIONS = " + JSON.stringify(opts));
-  
+
     // call XML
     var req = new XMLHttpRequest();
-    
+
     // get cgm data
     req.open('GET', opts.endpoint, true);
-    
+
     req.setRequestHeader('Cache-Control', 'no-cache');
-	
+
     req.onload = function(e) {
 
         if (req.readyState == 4) {
 
             if(req.status == 200) {
-                
-                // Load response   
+
+                // Load response
                 response = JSON.parse(req.responseText);
                 response = response.bgs;
-                
+
                 // check response data
                 if (response && response.length > 0) {
 
-                    // response data is good; send log with response 
+                    // response data is good; send log with response
                     // console.log('got response', JSON.stringify(response));
 
                     // initialize message data
 
                     // get direction arrow and BG
                     var currentDirection = response[0].direction,
+                    values= " ",
                     currentIcon = "10",
                     currentBG = response[0].sgv,
                     //currentBG = "100",
@@ -68,7 +70,7 @@ function fetchCgmData() {
                     // get timezone offset
                     timezoneDate = new Date(),
                     timezoneOffset = timezoneDate.getTimezoneOffset(),
-                        
+
                     // get CGM time delta and format
                     readingTime = new Date(response[0].datetime).getTime(),
                     //readingTime = null,
@@ -77,8 +79,8 @@ function fetchCgmData() {
                     // get app time and format
                     appTime = new Date().getTime(),
                     //appTime = null,
-                    formatAppTime = Math.floor( (appTime / 1000) - (timezoneOffset * 60) ),   
-                    
+                    formatAppTime = Math.floor( (appTime / 1000) - (timezoneOffset * 60) ),
+
                     // get BG delta and format
                     currentBGDelta = response[0].bgdelta,
                     //currentBGDelta = -8,
@@ -89,9 +91,9 @@ function fetchCgmData() {
                     //currentBattery = "100",
                     // get name of T1D
                     NameofT1DPerson = "IOB:" + response[0].iob;
-                    
+
                     //currentDirection = "NONE";
-                  
+
                     // convert arrow to a number string; sending number string to save memory
                     // putting NOT COMPUTABLE first because that's most common and can get out fastest
                     switch (currentDirection) {
@@ -107,28 +109,51 @@ function fetchCgmData() {
                       case "RATE OUT OF RANGE": currentIcon = "9"; break;
                       default: currentIcon = "10";
                     }
-					
+
                     // if no battery being sent yet, then send nothing to watch
                     // console.log("Battery Value: " + currentBattery);
                     if (typeof currentBattery == "undefined") {
-                      currentBattery = " ";  
+                      currentBattery = " ";
                     }
-                  
+
                     // assign bg delta string
                     formatBGDelta = ((currentBGDelta > 0 ? '+' : '') + currentBGDelta);
-                  
+
+                    if (opts.radio == "mgdl_form") {
+                      values = "0";  //mgdl selected
+                    } else {
+                      values = "1"; //mmol selected
+                    }
+                    values += "," + opts.lowbg;  //Low BG Level
+                    values += "," + opts.highbg; //High BG Level
+                    values += "," + opts.lowsnooze;  //LowSnooze minutes
+                    values += "," + opts.highsnooze; //HighSnooze minutes
+                    values += "," + opts.lowvibe;  //Low Vibration
+                    values += "," + opts.highvibe; //High Vibration
+                    values += "," + opts.vibepattern; //Vibration Pattern
+                    if (opts.timeformat == "12"){
+                      values += ",0";  //Time Format 12 Hour
+                    } else {
+                      values += ",1";  //Time Format 24 Hour
+                    }
+
+
+
+                    //console.log("Current Value: " + values);
+
+
                     // debug logs; uncomment when need to debug something
- 
+
                     //console.log("current Direction: " + currentDirection);
                     //console.log("current Icon: " + currentIcon);
                     //console.log("current BG: " + currentBG);
                     //console.log("now: " + formatAppTime);
                     //console.log("readingtime: " + formatReadTime);
                     //console.log("current BG delta: " + currentBGDelta);
-                    //console.log("current Formatted Delta: " + formatBGDelta);              
+                    //console.log("current Formatted Delta: " + formatBGDelta);
                     //console.log("current Battery: " + currentBattery);
-                    
-                    // load message data  
+
+                    // load message data
                     message = {
                       icon: currentIcon,
                       bg: currentBG,
@@ -136,17 +161,18 @@ function fetchCgmData() {
                       tapp: formatAppTime,
                       dlta: formatBGDelta,
                       ubat: currentBattery,
-                      name: NameofT1DPerson
+                      name: NameofT1DPerson,
+                      vals: values
                     };
-                    
+
                     // send message data to log and to watch
                     console.log("JS send message: " + JSON.stringify(message));
                     MessageQueue.sendAppMessage(message);
 
                 // response data is not good; format error message and send to watch
-                // have to send space in BG field for logo to show up on screen				
+                // have to send space in BG field for logo to show up on screen
                 } else {
-                  
+
                     // " " (space) shows these are init values (even though it's an error), not bad or null values
                     message = {
                       icon: " ",
@@ -155,9 +181,10 @@ function fetchCgmData() {
                       tapp: 0,
                       dlta: "ERR",
                       ubat: " ",
-                      name: " "
+                      name: " ",
+                      vals: " "
                     };
-                  
+
                     console.log("DATA OFFLINE JS message", JSON.stringify(message));
                     MessageQueue.sendAppMessage(message);
                 }
@@ -169,48 +196,48 @@ function fetchCgmData() {
 
 // message queue-ing to pace calls from C function on watch
 var MessageQueue = (function () {
-                    
+
                     var RETRY_MAX = 5;
-                    
+
                     var queue = [];
                     var sending = false;
                     var timer = null;
-                    
+
                     return {
                     reset: reset,
                     sendAppMessage: sendAppMessage,
                     size: size
                     };
-                    
+
                     function reset() {
                     queue = [];
                     sending = false;
                     }
-                    
+
                     function sendAppMessage(message, ack, nack) {
-                    
+
                     if (! isValidMessage(message)) {
                     return false;
                     }
-                    
+
                     queue.push({
                                message: message,
                                ack: ack || null,
                                nack: nack || null,
                                attempts: 0
                                });
-                    
+
                     setTimeout(function () {
                                sendNextMessage();
                                }, 1);
-                    
+
                     return true;
                     }
-                    
+
                     function size() {
                     return queue.length;
                     }
-                    
+
                     function isValidMessage(message) {
                     // A message must be an object.
                     if (message !== Object(message)) {
@@ -231,9 +258,9 @@ var MessageQueue = (function () {
                     return false;
                     }
                     }
-                    
+
                     return true;
-                    
+
                     function validValue(value) {
                     switch (typeof(value)) {
                     case 'string':
@@ -248,21 +275,21 @@ var MessageQueue = (function () {
                     return false;
                     }
                     }
-                    
+
                     function sendNextMessage() {
-                    
+
                     if (sending) { return; }
                     var message = queue.shift();
                     if (! message) { return; }
-                    
+
                     message.attempts += 1;
                     sending = true;
                     Pebble.sendAppMessage(message.message, ack, nack);
-                    
+
                     timer = setTimeout(function () {
                                        timeout();
                                        }, 1000);
-                    
+
                     function ack() {
                     clearTimeout(timer);
                     setTimeout(function () {
@@ -273,7 +300,7 @@ var MessageQueue = (function () {
                     message.ack.apply(null, arguments);
                     }
                     }
-                    
+
                     function nack() {
                     clearTimeout(timer);
                     if (message.attempts < RETRY_MAX) {
@@ -289,7 +316,7 @@ var MessageQueue = (function () {
                     }
                     }
                     }
-                    
+
                     function timeout() {
                     setTimeout(function () {
                                sending = false;
@@ -299,9 +326,9 @@ var MessageQueue = (function () {
                     message.ack.apply(null, arguments);
                     }
                     }
-                    
+
                     }
-                    
+
                     }());
 
 // pebble specific calls with watch
@@ -319,14 +346,12 @@ Pebble.addEventListener("appmessage",
 
 Pebble.addEventListener("showConfiguration", function(e) {
                         console.log("Showing Configuration", JSON.stringify(e));
-                        Pebble.openURL('http://nightscout.github.io/cgm-pebble/s1-config-4.2.0.html');
+                        Pebble.openURL('http://nightscout.github.io/cgm-pebble/s1-config-6.html');
                         });
 
 Pebble.addEventListener("webviewclosed", function(e) {
                         var opts = JSON.parse(decodeURIComponent(e.response));
                         console.log("CLOSE CONFIG OPTIONS = " + JSON.stringify(opts));
                         // store endpoint in local storage
-                        window.localStorage.setItem('cgmPebble', JSON.stringify(opts));                      
+                        window.localStorage.setItem('cgmPebble', JSON.stringify(opts));
                         });
-
-
