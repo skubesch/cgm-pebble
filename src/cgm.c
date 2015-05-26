@@ -1512,12 +1512,12 @@ static void load_bg() {
   // happy message; max message 24 characters
   // DO NOT GO OVER 24 CHARACTERS, INCLUDING SPACES OR YOU WILL CRASH
   // YOU HAVE BEEN WARNED
-	char happymsg_buffer111[26] = "EVERYTHING IS AWESOME\0";
+	char happymsg_buffer111[26] = "111 MILES - GO HEIDI GO\0";
 	char happymsg_buffer123[26] = "ABC EASY AS... D*CAN*BE\0";
 	char happymsg_buffer130[26] = "DON'T WORRY BE:)HAPPY\0";
-	char happymsg_buffer65[26] = "STAYIN ALIVE AH,HA,HA,HA\0";
+	char happymsg_buffer65[26] =  "GOT CARBS?\0";
 	char happymsg_buffer200[26] = "SHAKE*IT*OFF  SHAKE IT!\0";
-	char happymsg_buffer300[26] = "PREPARE 4 GLORY! SPARTA!\0";
+	char happymsg_buffer300[26] = "OH SHIT!!! BOLUS TIME?\0";
   
 	// CODE START
 	
@@ -2209,7 +2209,7 @@ static void load_bg_delta() {
   	// check if LOADING.., if true set message
   	// put " " (space) in bg field so logo continues to show
     if (strcmp(current_bg_delta, "LOAD") == 0) {
-      strncpy(formatted_bg_delta, "LOADING 7.0", MSGLAYER_BUFFER_SIZE);
+      strncpy(formatted_bg_delta, "FORKED 7.0", MSGLAYER_BUFFER_SIZE);
       text_layer_set_text(message_layer, formatted_bg_delta);
       text_layer_set_text(bg_layer, " ");
       create_update_bitmap(&icon_bitmap,icon_layer,SPECIAL_VALUE_ICONS[LOGO_SPECVALUE_ICON_INDX]);
